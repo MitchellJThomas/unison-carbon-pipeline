@@ -1,0 +1,26 @@
+# Unison
+.unison/
+.unisonHistory
+
+# Claude Code credentials
+.claude/
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log

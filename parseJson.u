@@ -1,0 +1,34 @@
+-- JSON Parser for Electricity Maps API
+-- Let's parse the JSON into our CarbonIntensityRecord type
+
+use .carbonIntensity
+use lib.json_1_2_1.core.Json
+
+-- First, let's just try to parse the JSON text into a Json value
+parseJsonText : Text -> Optional Json
+parseJsonText jsonText =
+  match Json.catchFromText jsonText with
+    Right json -> Some json
+    Left _err -> None
+
+-- Read and parse our sample file
+readAndParseJson : '{IO, Exception} (Optional Json)
+readAndParseJson = do
+  bytes = readFile (FilePath "data/electricity_maps_sample_data.json")
+  text = Text.fromUtf8 bytes
+  parseJsonText text
+
+-- Test: Read file and parse JSON
+testJsonParse : '{IO, Exception} ()
+testJsonParse = do
+  printLine "=== Testing JSON Parsing ==="
+  printLine ""
+
+  jsonOpt = readAndParseJson ()
+
+  match jsonOpt with
+    Some json ->
+      printLine "✓ Successfully parsed JSON!"
+      printLine (toText json)
+    None ->
+      printLine "✗ Failed to parse JSON"

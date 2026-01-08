@@ -1,0 +1,40 @@
+-- Clean JSON Decoder using Decoder combinators!
+-- Much shorter than the manual version
+
+use .carbonIntensity
+use lib.json_1_2_1.core.Json
+use lib.json_1_2_1.Decoder
+
+-- The decoder itself - composable and clean!
+carbonIntensityDecoder : '{Decoder} CarbonIntensityRecord
+carbonIntensityDecoder = do
+  zone = object.at! "zone" text
+  carbon = object.at! "carbonIntensity" nat
+  datetime = object.at! "datetime" text
+  estimated = object.at! "isEstimated" boolean
+  method = object.optionalAt! "estimationMethod" text
+  CarbonIntensityRecord zone carbon datetime estimated method
+
+-- Load, parse, and decode in one go
+loadAndDecodeClean : '{IO, Exception} CarbonIntensityRecord
+loadAndDecodeClean = do
+  bytes = readFile (FilePath "data/electricity_maps_sample_data.json")
+  text = Text.fromUtf8 bytes
+  json = Json.fromText text
+  run.parsed carbonIntensityDecoder json
+
+-- Test the clean decoder
+testCleanDecoder : '{IO, Exception} ()
+testCleanDecoder = do
+  printLine "=== Testing Clean Decoder ==="
+  printLine ""
+
+  record = loadAndDecodeClean ()
+
+  printLine "✓ Successfully decoded with combinators!"
+  printLine (formatRecord record)
+  printLine ""
+  printLine ("Zone: " Text.++ CarbonIntensityRecord.zone record)
+  printLine ("Carbon Intensity: " Text.++ Nat.toText (getCarbonIntensity record) Text.++ " gCO2eq/kWh")
+  printLine ("Estimated: " Text.++ Boolean.toText (isEstimatedReading record))
+  printLine ("Low Carbon (< 300)? " Text.++ Boolean.toText (isVeryLowCarbon record))

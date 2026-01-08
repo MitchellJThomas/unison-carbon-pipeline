@@ -1,0 +1,111 @@
+-- Aggregation functions for analyzing carbon intensity data
+-- Working with lists of records
+
+use .carbonIntensity
+
+-- Calculate average carbon intensity across multiple readings
+averageCarbonIntensity : [CarbonIntensityRecord] -> Optional Float
+averageCarbonIntensity records =
+  if List.isEmpty records then None
+  else
+    total = List.foldLeft (acc r -> acc + getCarbonIntensity r) 0 records
+    count = List.size records
+    Some (Float.fromNat total / Float.fromNat count)
+
+-- Find the minimum carbon intensity value
+minCarbonValue : [CarbonIntensityRecord] -> Optional Nat
+minCarbonValue records =
+  List.minimum (List.map getCarbonIntensity records)
+
+-- Find the maximum carbon intensity value
+maxCarbonValue : [CarbonIntensityRecord] -> Optional Nat
+maxCarbonValue records =
+  List.maximum (List.map getCarbonIntensity records)
+
+-- Find the record with minimum carbon intensity
+minCarbonIntensity : [CarbonIntensityRecord] -> Optional CarbonIntensityRecord
+minCarbonIntensity records =
+  match minCarbonValue records with
+    Some minVal -> List.find (r -> getCarbonIntensity r == minVal) records
+    None -> None
+
+-- Find the record with maximum carbon intensity
+maxCarbonIntensity : [CarbonIntensityRecord] -> Optional CarbonIntensityRecord
+maxCarbonIntensity records =
+  match maxCarbonValue records with
+    Some maxVal -> List.find (r -> getCarbonIntensity r == maxVal) records
+    None -> None
+
+-- Filter records below a carbon threshold
+filterLowCarbon : Nat -> [CarbonIntensityRecord] -> [CarbonIntensityRecord]
+filterLowCarbon threshold records =
+  List.filter (isLowCarbon threshold) records
+
+-- Count how many readings are below a threshold
+countLowCarbon : Nat -> [CarbonIntensityRecord] -> Nat
+countLowCarbon threshold records =
+  List.size (filterLowCarbon threshold records)
+
+-- Calculate percentage of low-carbon readings
+percentageLowCarbon : Nat -> [CarbonIntensityRecord] -> Optional Float
+percentageLowCarbon threshold records =
+  if List.isEmpty records then None
+  else
+    lowCount = countLowCarbon threshold records
+    total = List.size records
+    Some (Float.fromNat lowCount / Float.fromNat total * 100.0)
+
+-- Get all carbon intensity values as a list
+extractCarbonValues : [CarbonIntensityRecord] -> [Nat]
+extractCarbonValues records =
+  List.map getCarbonIntensity records
+
+-- Create some sample records for testing
+sampleRecords : [CarbonIntensityRecord]
+sampleRecords =
+  [ CarbonIntensityRecord "US-NW-PGE" 250 "2025-11-15T01:00:00.000Z" false None
+  , CarbonIntensityRecord "US-NW-PGE" 564 "2025-11-15T02:00:00.000Z" true (Some "TEST_MODE")
+  , CarbonIntensityRecord "US-NW-PGE" 180 "2025-11-15T03:00:00.000Z" false None
+  , CarbonIntensityRecord "US-NW-PGE" 420 "2025-11-15T04:00:00.000Z" true (Some "TEST_MODE")
+  , CarbonIntensityRecord "US-NW-PGE" 290 "2025-11-15T05:00:00.000Z" false None
+  ]
+
+-- Test all our aggregation functions
+testAggregations : '{IO, Exception} ()
+testAggregations = do
+  printLine "=== Testing Aggregation Functions ==="
+  printLine ""
+
+  -- Show sample data
+  printLine ("Sample size: " Text.++ Nat.toText (List.size sampleRecords) Text.++ " records")
+  printLine ("Carbon values: " Text.++ Debug.toText (extractCarbonValues sampleRecords))
+  printLine ""
+
+  -- Average
+  match averageCarbonIntensity sampleRecords with
+    Some avg -> printLine ("Average: " Text.++ Float.toText avg Text.++ " gCO2eq/kWh")
+    None -> printLine "Could not calculate average"
+
+  -- Min and Max
+  match minCarbonIntensity sampleRecords with
+    Some minRecord ->
+      printLine ("Min: " Text.++ Nat.toText (getCarbonIntensity minRecord) Text.++ " gCO2eq/kWh at " Text.++ CarbonIntensityRecord.datetime minRecord)
+    None -> printLine "No minimum found"
+
+  match maxCarbonIntensity sampleRecords with
+    Some maxRecord ->
+      printLine ("Max: " Text.++ Nat.toText (getCarbonIntensity maxRecord) Text.++ " gCO2eq/kWh at " Text.++ CarbonIntensityRecord.datetime maxRecord)
+    None -> printLine "No maximum found"
+
+  printLine ""
+
+  -- Low carbon analysis (threshold = 300)
+  lowRecords = filterLowCarbon 300 sampleRecords
+  printLine ("Low carbon readings (< 300): " Text.++ Nat.toText (List.size lowRecords))
+
+  match percentageLowCarbon 300 sampleRecords with
+    Some pct -> printLine ("Percentage low carbon: " Text.++ Float.toText pct Text.++ "%")
+    None -> printLine "Could not calculate percentage"
+
+  printLine ""
+  printLine "✓ All aggregation functions working!"

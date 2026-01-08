@@ -1,0 +1,40 @@
+{
+  "name": "Unison Carbon Pipeline",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "unison.unison"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/.unison,target=/root/.unison,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.claude,target=/root/.claude,type=bind,consistency=cached"
+  ],
+  "forwardPorts": [5757, 8080, 5858],
+  "portsAttributes": {
+    "5757": {
+      "label": "UCM",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Unison UI",
+      "onAutoForward": "notify"
+    },
+    "5858": {
+      "label": "UCM MCP Server",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "echo '=== Development Environment ===' && echo 'Unison UCM:' && ucm --version && echo 'Claude Code:' && claude --version && echo 'Beads:' && bd version && echo 'Node.js:' && node --version && echo '' && echo 'UCM MCP Server is pre-configured in .mcp.json' && echo 'It will auto-start when you run: claude'",
+  "remoteUser": "root",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+}

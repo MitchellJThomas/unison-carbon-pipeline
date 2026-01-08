@@ -1,0 +1,7 @@
+-- Super simple test - just print hello
+-- This will help us verify basic IO works
+
+helloWorld : '{IO, Exception} ()
+helloWorld = do
+  printLine "Hello from Unison!"
+  printLine "If you see this, basic IO works!"

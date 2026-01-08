@@ -1,0 +1,19 @@
+-- Simpler JSON Parser for Electricity Maps API Response
+-- Starting with basic file reading and JSON parsing
+
+-- Read the sample JSON file
+readSampleJson : '{IO, Exception} Text
+readSampleJson = do
+  readFile (FilePath "data/sample_response.json")
+
+-- Test: Just read and print the raw JSON
+testReadFile : '{IO, Exception} ()
+testReadFile = do
+  printLine "=== Reading JSON File ==="
+  content = readSampleJson ()
+  printLine content
+  printLine ""
+  printLine "✓ File read successfully!"
+
+-- Once we confirm file reading works, we'll add JSON parsing
+-- Unison's JSON library: we'll explore it step by step

@@ -1,0 +1,32 @@
+-- Scratch file for testing our functions
+-- Load this with: .> load scratch.u
+-- Then run with: .> run main
+
+use .carbonIntensity
+
+-- Test our functions by creating a main computation
+main : '{IO, Exception} ()
+main = do
+  -- Test 1: View the sample record
+  printLine "=== Sample Record ==="
+  printLine (formatRecord sampleRecord)
+  printLine ""
+
+  -- Test 2: Get carbon intensity value
+  printLine "=== Carbon Intensity Value ==="
+  printLine (Nat.toText (getCarbonIntensity sampleRecord))
+  printLine ""
+
+  -- Test 3: Check if it's estimated
+  printLine "=== Is Estimated? ==="
+  printLine (Boolean.toText (isEstimatedReading sampleRecord))
+  printLine ""
+
+  -- Test 4: Check if low carbon
+  printLine "=== Is Very Low Carbon? (< 300) ==="
+  printLine (Boolean.toText (isVeryLowCarbon sampleRecord))
+  printLine ""
+
+  -- Test 5: Check against different threshold
+  printLine "=== Is Below 600? ==="
+  printLine (Boolean.toText (isLowCarbon 600 sampleRecord))

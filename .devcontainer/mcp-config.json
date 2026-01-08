@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "unison": {
+      "command": "/usr/local/bin/ucm",
+      "args": ["mcp"]
+    }
+  }
+}

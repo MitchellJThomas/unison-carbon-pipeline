@@ -1,0 +1,50 @@
+-- Carbon Intensity Data Parser for Electricity Maps API
+-- This is your first Unison code!
+
+-- First, let's define a data type to represent our carbon intensity record
+-- In Unison, types start with uppercase, fields with lowercase
+type CarbonIntensityRecord =
+  { zone : Text
+  , carbonIntensity : Nat  -- Natural number (non-negative integer)
+  , datetime : Text        -- We'll keep as Text for now, can parse to Time later
+  , isEstimated : Boolean
+  , estimationMethod : Optional Text
+  }
+
+-- A simple function to create a sample record
+-- This helps us understand the structure in the REPL
+sampleRecord : CarbonIntensityRecord
+sampleRecord =
+  CarbonIntensityRecord
+    "US-NW-PGE"
+    564
+    "2025-11-15T05:00:00.000Z"
+    true
+    (Some "TEST_MODE_DATA")
+
+-- Extract just the carbon intensity value (useful for aggregations)
+getCarbonIntensity : CarbonIntensityRecord -> Nat
+getCarbonIntensity record =
+  CarbonIntensityRecord.carbonIntensity record
+
+-- Check if a reading is estimated
+isEstimatedReading : CarbonIntensityRecord -> Boolean
+isEstimatedReading record =
+  CarbonIntensityRecord.isEstimated record
+
+-- Create a human-readable summary of a record
+formatRecord : CarbonIntensityRecord -> Text
+formatRecord record =
+  "Zone: " Text.++ CarbonIntensityRecord.zone record Text.++
+  " | Carbon: " Text.++ Nat.toText (CarbonIntensityRecord.carbonIntensity record) Text.++
+  " gCO2eq/kWh" Text.++
+  " | Time: " Text.++ CarbonIntensityRecord.datetime record
+
+-- Helper: Check if carbon intensity is "low" (below threshold)
+isLowCarbon : Nat -> CarbonIntensityRecord -> Boolean
+isLowCarbon threshold record =
+  CarbonIntensityRecord.carbonIntensity record < threshold
+
+-- Example: Is this reading below 300 gCO2eq/kWh?
+isVeryLowCarbon : CarbonIntensityRecord -> Boolean
+isVeryLowCarbon = isLowCarbon 300

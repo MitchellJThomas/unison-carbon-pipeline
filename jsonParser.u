@@ -1,0 +1,71 @@
+-- JSON Parser for Electricity Maps API Response
+-- This shows how to parse real API responses into our data types
+
+use .carbonIntensity
+
+-- Parse a JSON object into our CarbonIntensityRecord
+-- This uses Unison's pattern matching on JSON values
+parseRecord : Json -> Optional CarbonIntensityRecord
+parseRecord json = match json with
+  Object fields ->
+    -- Extract each field from the JSON object
+    zone = Map.get "zone" fields
+    carbonIntensity = Map.get "carbonIntensity" fields
+    datetime = Map.get "datetime" fields
+    isEstimated = Map.get "isEstimated" fields
+    estimationMethod = Map.get "estimationMethod" fields
+
+    -- Convert JSON values to our types
+    -- Using Optional.flatMap to chain operations that might fail
+    zone' = Optional.flatMap Json.asText zone
+    carbon' = Optional.flatMap Json.asNat carbonIntensity
+    datetime' = Optional.flatMap Json.asText datetime
+    estimated' = Optional.flatMap Json.asBoolean isEstimated
+    method' = Optional.map Json.asText estimationMethod
+                |> Optional.flatMap identity
+
+    -- If all required fields parsed successfully, create the record
+    Optional.map5
+      (zone'' carbon'' datetime'' estimated'' method'' ->
+        CarbonIntensityRecord zone'' carbon'' datetime'' estimated'' (Some method''))
+      zone'
+      carbon'
+      datetime'
+      estimated'
+      method'
+
+  _ -> None
+
+-- Helper: Load JSON from a file
+loadJsonFromFile : Text -> '{IO, Exception} (Optional Json)
+loadJsonFromFile filepath = do
+  content = readFile filepath
+  match Json.parse content with
+    Right parsed -> Some parsed
+    Left _error -> None
+
+-- Read our sample data and parse it
+loadSampleRecord : '{IO, Exception} (Optional CarbonIntensityRecord)
+loadSampleRecord = do
+  jsonOpt = loadJsonFromFile "data/sample_response.json"
+  match jsonOpt with
+    Some json -> parseRecord json
+    None -> None
+
+-- Test the JSON parsing
+testJsonParsing : '{IO, Exception} ()
+testJsonParsing = do
+  printLine "=== Testing JSON Parsing ==="
+  printLine ""
+
+  recordOpt = loadSampleRecord ()
+
+  match recordOpt with
+    Some record ->
+      printLine "✓ Successfully parsed JSON!"
+      printLine (formatRecord record)
+      printLine ""
+      printLine ("Carbon Intensity: " Text.++ Nat.toText (getCarbonIntensity record) Text.++ " gCO2eq/kWh")
+
+    None ->
+      printLine "✗ Failed to parse JSON"

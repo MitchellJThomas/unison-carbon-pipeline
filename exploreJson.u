@@ -1,0 +1,19 @@
+-- Exploring Unison's capabilities for our pipeline
+-- Let's start by reading our JSON file as text
+
+-- Step 1: Read the JSON file as raw text
+readSampleData : '{IO, Exception} Text
+readSampleData = do
+  bytes = readFile (FilePath "data/electricity_maps_sample_data.json")
+  Text.fromUtf8 bytes
+
+-- Step 2: Print it out to verify we can read files
+testFileReading : '{IO, Exception} ()
+testFileReading = do
+  printLine "=== Reading Sample JSON File ==="
+  printLine ""
+
+  content = readSampleData ()
+  printLine content
+  printLine ""
+  printLine "✓ Successfully read file!"

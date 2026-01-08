@@ -1,0 +1,24 @@
+-- Let's discover what we have available
+-- This is a learning exercise - we'll build up from what exists
+
+-- For now, let's just work with the raw text
+-- We'll manually extract the fields (not ideal, but works!)
+
+-- Simple text-based extraction (temporary approach)
+-- Real JSON parsing coming once we find the right library
+extractCarbonIntensity : Text -> Optional Nat
+extractCarbonIntensity jsonText =
+  -- This is a hack - we'll replace with proper JSON parsing
+  -- Just checking if we can find "carbonIntensity":564
+  None -- Placeholder for now
+
+-- Test with our file
+testManualParse : '{IO, Exception} ()
+testManualParse = do
+  bytes = readFile (FilePath "data/electricity_maps_sample_data.json")
+  text = Text.fromUtf8 bytes
+
+  printLine "=== Raw JSON Content ==="
+  printLine text
+  printLine ""
+  printLine "Next: We'll find the right JSON library to parse this properly"

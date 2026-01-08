@@ -1,0 +1,86 @@
+-- Decoder for Electricity Maps JSON into CarbonIntensityRecord
+
+use .carbonIntensity
+use lib.json_1_2_1.core.Json
+
+-- Helper: Find a key in a JSON object's field list
+findField : Text -> [(Text, Json)] -> Optional Json
+findField key fields =
+  List.find (pair -> Tuple.at1 pair == key) fields
+    |> Optional.map Tuple.at2
+
+-- Extract a Text value from Json
+asText : Json -> Optional Text
+asText json = match json with
+  Json.Text t -> Some t
+  _ -> None
+
+-- Extract a Nat value from Json
+asNat : Json -> Optional Nat
+asNat json = match json with
+  Json.Number.Unparsed numText -> Nat.fromText numText
+  _ -> None
+
+-- Extract a Boolean value from Json
+asBoolean : Json -> Optional Boolean
+asBoolean json = match json with
+  Json.Boolean b -> Some b
+  _ -> None
+
+-- Decode the full CarbonIntensityRecord from Json
+decodeRecord : Json -> Optional CarbonIntensityRecord
+decodeRecord json = match json with
+  Json.Object fields ->
+    -- Extract each field
+    zoneJson = findField "zone" fields
+    carbonJson = findField "carbonIntensity" fields
+    datetimeJson = findField "datetime" fields
+    estimatedJson = findField "isEstimated" fields
+    methodJson = findField "estimationMethod" fields
+
+    -- Convert to proper types
+    zone = Optional.flatMap asText zoneJson
+    carbon = Optional.flatMap asNat carbonJson
+    datetime = Optional.flatMap asText datetimeJson
+    estimated = Optional.flatMap asBoolean estimatedJson
+    method = Optional.flatMap asText methodJson
+
+    -- Build the record if all required fields present
+    match (zone, carbon, datetime, estimated) with
+      (Some z, Some c, Some d, Some e) ->
+        Some (CarbonIntensityRecord z c d e method)
+      _ -> None
+
+  _ -> None
+
+-- Load, parse, and decode the sample file
+loadAndDecodeRecord : '{IO, Exception} (Optional CarbonIntensityRecord)
+loadAndDecodeRecord = do
+  bytes = readFile (FilePath "data/electricity_maps_sample_data.json")
+  text = Text.fromUtf8 bytes
+  jsonOpt = match Json.catchFromText text with
+    Right j -> Some j
+    Left _ -> None
+  match jsonOpt with
+    Some json -> decodeRecord json
+    None -> None
+
+-- Test the full pipeline: read -> parse -> decode
+testDecode : '{IO, Exception} ()
+testDecode = do
+  printLine "=== Testing Full JSON Decode ==="
+  printLine ""
+
+  recordOpt = loadAndDecodeRecord ()
+
+  match recordOpt with
+    Some record ->
+      printLine "✓ Successfully decoded record!"
+      printLine (formatRecord record)
+      printLine ""
+      printLine ("Zone: " Text.++ CarbonIntensityRecord.zone record)
+      printLine ("Carbon: " Text.++ Nat.toText (getCarbonIntensity record))
+      printLine ("Estimated: " Text.++ Boolean.toText (isEstimatedReading record))
+
+    None ->
+      printLine "✗ Failed to decode JSON into record"

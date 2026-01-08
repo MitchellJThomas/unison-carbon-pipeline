@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "unison": {
+      "command": "ucm",
+      "args": ["mcp"],
+      "transport": "stdio",
+      "description": "Unison Codebase Manager MCP server for AI-assisted Unison development"
+    }
+  }
+}

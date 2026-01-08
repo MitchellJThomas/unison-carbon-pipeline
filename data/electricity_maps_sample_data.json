@@ -1,0 +1,12 @@
+{
+  "zone": "US-NW-PGE",
+  "carbonIntensity": 564,
+  "datetime": "2025-11-15T05:00:00.000Z",
+  "updatedAt": "2025-11-15T23:39:57.413Z",
+  "createdAt": "2025-11-12T05:10:12.454Z",
+  "emissionFactorType": "lifecycle",
+  "isEstimated": true,
+  "estimationMethod": "TEST_MODE_DATA",
+  "temporalGranularity": "hourly",
+  "_disclaimer": "TEST MODE: intentionally inaccurate data for integration testing. For live data, head over to https://portal.electricitymaps.com/ and request access."
+}
