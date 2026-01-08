@@ -1,12 +1,15 @@
 # Use Chainguard Node.js development image (includes Node.js, npm, shell, and apk)
 FROM cgr.dev/chainguard/node:latest-dev
 
+# Switch to root for package installations
+USER root
+
 # Install additional dependencies
 RUN apk update && apk add --no-cache \
     curl \
-    tar \
     git \
-    ca-certificates
+    ca-certificates \
+    libarchive-tools
 
 # Download and install Unison UCM
 ARG UNISON_VERSION=latest
@@ -36,6 +39,9 @@ RUN chmod +x /usr/local/bin/start-mcp-server
 
 # Expose ports for UCM, Unison UI, and MCP Server
 EXPOSE 5757 8080 5858
+
+# Override the Node.js entrypoint to use shell
+ENTRYPOINT ["/bin/sh", "-c"]
 
 # Default command
 CMD ["/bin/bash"]
