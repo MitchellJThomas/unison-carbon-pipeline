@@ -4,6 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "."
   },
+  "initializeCommand": "mkdir -p ${localWorkspaceFolder}/.unison ${localWorkspaceFolder}/.claude",
   "customizations": {
     "vscode": {
       "extensions": [
