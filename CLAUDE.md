@@ -22,7 +22,7 @@ All development happens through the **UCM (Unison Codebase Manager)** REPL:
 1. **Start UCM**: `ucm` (opens the Unison REPL prompt: `.>`)
 2. **Load scratch files**: `.> load filename.u` (typechecks and shows definitions)
 3. **Add new definitions**: `.> add` (persists to content-addressed codebase)
-4. **Update existing code**: `.> update.old` (modifies existing definitions)
+4. **Update existing code**: `.> update` (modifies existing definitions and their dependents)
 5. **Run functions**: `.> run functionName` (executes IO functions)
 6. **Search definitions**: `.> find searchTerm` (finds in local codebase)
 7. **Search libraries**: `.> find-in.all lib searchTerm` (searches installed libraries)
@@ -31,7 +31,8 @@ All development happens through the **UCM (Unison Codebase Manager)** REPL:
 - Edit `.u` files with regular text editors
 - Load them into UCM with `load filename.u`
 - UCM typechecks and shows what's new or changed
-- Use `add` for new code, `update.old` for modifications
+- Use `add` for new code, `update` for modifications
+- The `update` command automatically handles dependent code updates
 - Never directly "run" a `.u` file - always go through UCM
 
 ## Common Development Commands
@@ -44,12 +45,20 @@ ucm
 # Inside UCM:
 .> load carbonIntensity.u           # Load and typecheck a scratch file
 .> add                              # Add new definitions to codebase
-.> update.old                       # Update existing definitions
+.> update                           # Update existing definitions
 .> run testAggregations             # Run an IO function
 .> find carbonIntensity             # Search local codebase
 .> find-in.all lib json             # Search all libraries
 .> ls                               # List definitions in current namespace
 ```
+
+### Updating Existing Code
+The recommended workflow for modifying existing definitions:
+1. **Edit code**: Use `edit termName` to bring a definition into your scratch file, or manually edit a `.u` file
+2. **Load changes**: Use `load filename.u` to typecheck
+3. **Update codebase**: Use `update` to save changes and update all dependents
+4. **Resolve conflicts**: If UCM finds issues, it will open your editor with non-typechecking code
+5. **Iterate**: Fix issues and run `update` again until successful
 
 ### Running Tests
 All test functions are executable through UCM:
@@ -232,7 +241,7 @@ This project includes a devcontainer based on Chainguard's secure Node.js image 
 
 1. **Don't modify `.unison` directory** - It's the codebase database
 2. **Always use UCM** - Never run `.u` files directly
-3. **Use `update.old` not `add`** - When modifying existing definitions
+3. **Use `update` not `add`** - When modifying existing definitions (use `add` only for new definitions)
 4. **Type mismatches** - Remember `Nat` vs `Int` distinctions
 5. **Ability requirements** - Functions with IO must be called in IO context
 
