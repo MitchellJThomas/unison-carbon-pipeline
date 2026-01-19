@@ -20,9 +20,6 @@
     "source=${localWorkspaceFolder}/.claude,target=/root/.claude,type=bind,consistency=cached"
   ],
   "features": {
-    "ghcr.io/devcontainers/features/sshd:1": {
-      "version": "latest"
-    }
   },
   "remoteEnv": {
     "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}"
