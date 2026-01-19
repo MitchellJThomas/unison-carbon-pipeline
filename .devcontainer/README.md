@@ -31,13 +31,147 @@ The dev container is based on **Chainguard's Node.js development image** (`cgr.d
 - **Port 8080**: Unison UI (accessible at http://localhost:8080/public/ui/)
 - **Port 5858**: UCM MCP Server (HTTP endpoint for AI agents)
 
+## Automatic Project Bootstrap 🚀
+
+**NEW**: When you open this project in a fresh codespace or dev container, the Unison carbon-pipeline project is **automatically initialized** with all code loaded!
+
+### What Happens Automatically
+
+The `postCreateCommand` in `devcontainer.json` runs `bootstrap-unison-project.sh` which:
+
+1. ✅ Initializes the Unison codebase (`.unison/v2/`)
+2. ✅ Creates the `carbon-pipeline` project with `main` branch
+3. ✅ Installs required libraries (`base`, `unison_json_1_3_5`)
+4. ✅ Loads all `.u` source files into the project:
+   - `carbonIntensity.u` - Core types and utilities
+   - `aggregations.u` - Statistical functions
+   - `cleanDecoder.u` - JSON decoder
+   - `README.u` - Project documentation (if present)
+5. ✅ Verifies the setup by counting definitions
+6. ✅ Runs initial tests to confirm everything works
+
+### Expected Bootstrap Output
+
+```
+🚀 Bootstrapping Unison Carbon Pipeline Project...
+
+[1/7] Checking UCM installation...
+✅ UCM installed: unison version: release/1.0.2
+
+[2/7] Initializing Unison codebase...
+✅ Codebase initialized
+
+[3/7] Creating carbon-pipeline project...
+✅ Project created: carbon-pipeline/main
+
+[4/7] Installing required libraries...
+✅ Libraries installed
+
+[5/7] Loading source files into project...
+  ✅ carbonIntensity.u loaded
+  ✅ aggregations.u loaded
+  ✅ cleanDecoder.u loaded
+
+[6/7] Verifying project setup...
+✅ Found 34 definitions in project
+✅ CarbonIntensityRecord type found
+
+[7/7] Running initial tests...
+✅ Tests are working!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ Bootstrap Complete!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 Project: carbon-pipeline/main
+📊 Definitions: 34
+🔧 MCP Server: Pre-configured in .mcp.json
+```
+
+### After Bootstrap
+
+Once the container is ready, you can immediately:
+
+**With Claude Code (MCP):**
+```javascript
+mcp__unison__list-project-definitions({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"}
+})
+```
+
+**With UCM:**
+```bash
+ucm
+.> ls                        # See all definitions
+.> run testAggregations      # Run tests
+```
+
+**With helper scripts:**
+```bash
+./scripts/project-info.sh    # View project overview
+./scripts/run-tests.sh       # Run all tests
+```
+
+### Manual Re-Bootstrap
+
+If you need to re-initialize the project (e.g., after making changes to source files):
+
+```bash
+./scripts/manual-bootstrap.sh
+```
+
+Or run the bootstrap script directly:
+
+```bash
+.devcontainer/bootstrap-unison-project.sh
+```
+
+### Troubleshooting Bootstrap
+
+If bootstrap fails or definitions are missing:
+
+1. **Check UCM installation:**
+   ```bash
+   ucm version
+   ```
+
+2. **Verify .unison directory exists:**
+   ```bash
+   ls -la .unison/v2/
+   ```
+
+3. **Check source files are present:**
+   ```bash
+   ls -la *.u
+   ```
+
+4. **Manually re-run bootstrap:**
+   ```bash
+   ./scripts/manual-bootstrap.sh
+   ```
+
+5. **Check UCM project list:**
+   ```bash
+   echo "projects" | ucm
+   ```
+
 ## Usage
 
-### Opening in VS Code
+### Opening in GitHub Codespaces
+
+1. Navigate to the repository on GitHub
+2. Click the green **Code** button
+3. Select the **Codespaces** tab
+4. Click **Create codespace on main**
+5. **Wait for automatic bootstrap to complete** (watch the terminal output)
+6. Once complete, you'll have a fully initialized Unison project ready to use!
+
+### Opening in VS Code (Local)
 
 1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Open this project in VS Code
 3. Press `F1` and select "Dev Containers: Reopen in Container"
+4. **Wait for automatic bootstrap to complete** (watch the terminal output)
 
 ### Manual Docker Build
 
@@ -239,12 +373,14 @@ For more information, visit the [Beads GitHub repository](https://github.com/ste
 
 ## Configuration Files
 
-- **devcontainer.json**: VS Code dev container configuration
+- **devcontainer.json**: VS Code dev container configuration with automatic bootstrap
 - **Dockerfile**: Container image definition using Chainguard Node.js development image
+- **bootstrap-unison-project.sh**: Automatic project initialization script (runs on container creation)
 - **.dockerignore**: Files to exclude from the build context
 - **../.mcp.json**: Project-scoped MCP server configuration (UCM pre-configured for Claude CLI)
 - **mcp-config.json**: MCP server configuration template for other MCP clients
 - **start-mcp-server.sh**: Convenience script to manually start the UCM MCP server (not needed for Claude CLI)
+- **../scripts/manual-bootstrap.sh**: Manual re-bootstrap script for re-initializing the project
 
 ## Customization
 

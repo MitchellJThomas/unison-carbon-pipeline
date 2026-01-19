@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "."
   },
-  "initializeCommand": "mkdir -p ${localWorkspaceFolder}/.unison ${localWorkspaceFolder}/.claude",
+  "initializeCommand": "mkdir -p ${localWorkspaceFolder}/.unison ${localWorkspaceFolder}/.claude ${localWorkspaceFolder}/scripts",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -19,6 +19,14 @@
     "source=${localWorkspaceFolder}/.unison,target=/root/.unison,type=bind,consistency=cached",
     "source=${localWorkspaceFolder}/.claude,target=/root/.claude,type=bind,consistency=cached"
   ],
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}"
+  },
   "forwardPorts": [5757, 8080, 5858],
   "portsAttributes": {
     "5757": {
@@ -34,7 +42,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "echo '=== Development Environment ===' && echo 'Unison UCM:' && ucm --version && echo 'Claude Code:' && claude --version && echo 'Beads:' && bd version && echo 'Node.js:' && node --version && echo '' && echo 'UCM MCP Server is pre-configured in .mcp.json' && echo 'It will auto-start when you run: claude'",
+  "postCreateCommand": ".devcontainer/bootstrap-unison-project.sh",
   "remoteUser": "root",
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"

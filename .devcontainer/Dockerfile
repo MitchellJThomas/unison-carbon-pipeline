@@ -9,7 +9,8 @@ RUN apk update && apk add --no-cache \
     curl \
     git \
     ca-certificates \
-    libarchive-tools
+    libarchive-tools \
+    openssh-client
 
 # Download and install Unison UCM
 ARG UNISON_VERSION=latest
@@ -36,6 +37,10 @@ RUN mkdir -p /root/.claude
 # Copy MCP server startup script
 COPY start-mcp-server.sh /usr/local/bin/start-mcp-server
 RUN chmod +x /usr/local/bin/start-mcp-server
+
+# Copy bootstrap script for initializing the Unison project
+COPY bootstrap-unison-project.sh /usr/local/bin/bootstrap-unison-project
+RUN chmod +x /usr/local/bin/bootstrap-unison-project
 
 # Expose ports for UCM, Unison UI, and MCP Server
 EXPOSE 5757 8080 5858

@@ -16,8 +16,21 @@ This project uses Unison, which has a fundamentally different development model 
 - The `.unison` directory contains the codebase database (never modify manually)
 - `.u` files are "scratch files" used to introduce definitions into UCM
 
-### REPL-Driven Development
-All development happens through the **UCM (Unison Codebase Manager)** REPL:
+### MCP-First Development (REQUIRED for Claude Code)
+**CRITICAL**: When working with Claude Code, you MUST use MCP server tools instead of direct UCM commands. This provides better integration, type safety, and AI assistance.
+
+#### Required MCP Workflow
+1. **Typecheck code**: Use `mcp__unison__typecheck-code` on `.u` files
+2. **Run functions**: Use `mcp__unison__run` to execute IO functions
+3. **Search definitions**: Use `mcp__unison__search-definitions-by-name`
+4. **View source**: Use `mcp__unison__view-definitions`
+5. **Install libraries**: Use `mcp__unison__lib-install`
+6. **Run tests**: Use `mcp__unison__run-tests`
+
+See `MCP_CONFIGURATION.md` for complete MCP tool reference.
+
+### REPL-Driven Development (Manual UCM)
+For manual development outside Claude Code, use UCM REPL:
 
 1. **Start UCM**: `ucm` (opens the Unison REPL prompt: `.>`)
 2. **Load scratch files**: `.> load filename.u` (typechecks and shows definitions)
@@ -25,19 +38,77 @@ All development happens through the **UCM (Unison Codebase Manager)** REPL:
 4. **Update existing code**: `.> update` (modifies existing definitions and their dependents)
 5. **Run functions**: `.> run functionName` (executes IO functions)
 6. **Search definitions**: `.> find searchTerm` (finds in local codebase)
-7. **Search libraries**: `.> find-in.all lib searchTerm` (searches installed libraries)
 
 ### Working with Scratch Files
 - Edit `.u` files with regular text editors
-- Load them into UCM with `load filename.u`
+- **With Claude Code**: Use `mcp__unison__typecheck-code` to validate
+- **Manual UCM**: Load with `load filename.u`
 - UCM typechecks and shows what's new or changed
 - Use `add` for new code, `update` for modifications
-- The `update` command automatically handles dependent code updates
-- Never directly "run" a `.u` file - always go through UCM
+- Never directly "run" a `.u` file - always go through UCM or MCP
 
 ## Common Development Commands
 
-### UCM Commands
+### MCP Commands (PRIMARY for Claude Code)
+**ALWAYS prefer these MCP tools when using Claude Code**:
+
+```javascript
+// Current project context
+mcp__unison__get-current-project-context()
+// => {projectName: "carbon-pipeline", branchName: "main"}
+
+// Typecheck a file
+mcp__unison__typecheck-code({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  code: {filePath: "/workspace/carbonIntensity.u"}
+})
+
+// Run a function
+mcp__unison__run({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  mainFunctionName: "testAggregations",
+  args: []
+})
+
+// Search for definitions
+mcp__unison__search-definitions-by-name({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  query: "carbonIntensity"
+})
+
+// View source code
+mcp__unison__view-definitions({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  names: ["getCarbonIntensity", "averageCarbonIntensity"]
+})
+
+// List all definitions
+mcp__unison__list-project-definitions({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"}
+})
+
+// Install a library
+mcp__unison__lib-install({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  libProjectName: "@unison/http",
+  libBranchName: null  // null = latest release
+})
+
+// Search Unison Share
+mcp__unison__share-project-search({query: "http client"})
+
+// Run tests
+mcp__unison__run-tests({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  subnamespace: null
+})
+```
+
+See `MCP_CONFIGURATION.md` for the complete MCP tool reference.
+
+### UCM Commands (Manual Development)
+For manual development outside Claude Code:
+
 ```bash
 # Start Unison Codebase Manager
 ucm
@@ -52,38 +123,34 @@ ucm
 .> ls                               # List definitions in current namespace
 ```
 
-### Updating Existing Code
-The recommended workflow for modifying existing definitions:
-1. **Edit code**: Use `edit termName` to bring a definition into your scratch file, or manually edit a `.u` file
+### Updating Existing Code (Claude Code)
+**Recommended workflow with MCP tools**:
+1. **Edit code**: Modify `.u` files directly
+2. **Typecheck**: Use `mcp__unison__typecheck-code` to validate
+3. **Run**: Use `mcp__unison__run` to test execution
+4. **Iterate**: Fix issues and repeat
+
+### Updating Existing Code (Manual UCM)
+For manual development:
+1. **Edit code**: Use `edit termName` or manually edit `.u` files
 2. **Load changes**: Use `load filename.u` to typecheck
-3. **Update codebase**: Use `update` to save changes and update all dependents
-4. **Resolve conflicts**: If UCM finds issues, it will open your editor with non-typechecking code
-5. **Iterate**: Fix issues and run `update` again until successful
+3. **Update codebase**: Use `update` to save changes
+4. **Resolve conflicts**: Fix issues if UCM reports problems
+5. **Iterate**: Repeat until successful
 
-### Running Tests
-All test functions are executable through UCM:
-```bash
-ucm
-.> run testAggregations             # Test aggregation functions with sample data
-.> run testCleanDecoder             # Test JSON decoder
-```
+### MCP Server Configuration
+The Unison MCP server is pre-configured in `.mcp.json`:
+- **Transport**: stdio (recommended)
+- **Command**: `ucm mcp`
+- **Auto-started**: By Claude Code CLI
 
-### MCP Server (AI Integration)
-The Unison MCP server enables AI-assisted development:
-```bash
-# Start MCP server (stdio mode - recommended)
-ucm mcp
-
-# Or use the convenience script
-start-mcp-server
-```
-
-The MCP server is pre-configured in `.mcp.json` for Claude Code CLI and provides:
+The MCP server provides:
 - Code typechecking and validation
 - Definition search and exploration
-- Test execution
+- Test execution and running
 - Library management
 - Unison Share integration
+- Documentation access via `file://unison-guide` resource
 
 ## Code Architecture
 
@@ -108,7 +175,7 @@ type CarbonIntensityRecord =
 - Sample data for REPL exploration
 
 **cleanDecoder.u**
-- JSON decoder using `lib.json_1_2_1.Decoder` combinators
+- JSON decoder using `lib.unison_json_1_3_5.Decoder` combinators
 - Decoder composition pattern with `object.at!`
 - File I/O integration for loading JSON data
 
@@ -120,12 +187,12 @@ type CarbonIntensityRecord =
 ### Functional Patterns Used
 
 **Decoder Combinators**
-The project uses decoder combinators from `lib.json_1_2_1.Decoder` for type-safe JSON parsing:
+The project uses decoder combinators from `lib.unison_json_1_3_5.Decoder` for type-safe JSON parsing:
 ```unison
 carbonIntensityDecoder = do
-  zone = object.at! "zone" text
-  carbon = object.at! "carbonIntensity" nat
-  datetime = object.at! "datetime" text
+  zone = object.at! "zone" Decoder.text
+  carbon = object.at! "carbonIntensity" Decoder.nat
+  datetime = object.at! "datetime" Decoder.text
   -- Composable, type-safe, elegant
 ```
 
@@ -158,13 +225,24 @@ Unison's effect system makes side effects explicit:
 - Pattern matching with `match` for safe unwrapping
 
 ### Library Dependencies
-The project uses:
-- `lib.json_1_2_1.core.Json` - JSON parsing
-- `lib.json_1_2_1.Decoder` - Type-safe decoding with combinators
+The `carbon-pipeline` project uses:
+- `lib.unison_json_1_3_5.core.Json` - JSON parsing
+- `lib.unison_json_1_3_5.Decoder` - Type-safe decoding with combinators
+- `lib.base` - Unison standard library
 
-To add new libraries:
-```unison
-.> pull @library/name.version .lib.name
+To add new libraries with Claude Code:
+```javascript
+mcp__unison__lib-install({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  libProjectName: "@unison/library-name",
+  libBranchName: null  // null = latest release, or specify version like "1.2.3"
+})
+```
+
+To add new libraries manually:
+```bash
+ucm
+.> pull @library/name/releases/version lib.library_name
 ```
 
 ### File I/O
@@ -247,8 +325,29 @@ This project includes a devcontainer based on Chainguard's secure Node.js image 
 
 ## Resources
 
+### Documentation
+- **MCP Configuration**: `MCP_CONFIGURATION.md` - Complete MCP server tool reference
 - Main project README: `README.md`
 - Phase 1 guide: `PHASE1_GUIDE.md`
 - Phase 1 completion notes: `PHASE1_COMPLETE.md`
-- Sample data: `data/electricity_maps_sample_data.json`
 - Devcontainer docs: `.devcontainer/README.md`
+
+### Data Files
+- Sample data: `data/electricity_maps_sample_data.json`
+
+### Project Configuration
+- MCP server config: `.mcp.json`
+- Git ignore: `.gitignore`
+- Unison codebase: `.unison/` (DO NOT MODIFY MANUALLY)
+
+### Current Project State
+**Project**: `carbon-pipeline/main`
+**Definitions**: 34 functions and types
+**Libraries**: base (8,725 terms), unison_json_1_3_5 (8,184 terms)
+
+Check current state with:
+```javascript
+mcp__unison__list-project-definitions({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"}
+})
+```

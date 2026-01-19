@@ -78,7 +78,7 @@ testAggregations = do
 
   -- Show sample data
   printLine ("Sample size: " Text.++ Nat.toText (List.size sampleRecords) Text.++ " records")
-  printLine ("Carbon values: " Text.++ Debug.toText (extractCarbonValues sampleRecords))
+  printLine ("Carbon values: " Text.++ List.toText Nat.toText (extractCarbonValues sampleRecords))
   printLine ""
 
   -- Average

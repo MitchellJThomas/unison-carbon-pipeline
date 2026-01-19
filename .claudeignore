@@ -1,0 +1,48 @@
+# Claude Code Ignore File
+# Prevents Claude from reading unnecessary files for better performance
+
+# Unison codebase database (managed by UCM, never read directly)
+.unison/
+
+# Unison history file (auto-generated)
+.unisonHistory
+
+# Git internals
+.git/objects/
+.git/logs/
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+out/
+*.uc
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp

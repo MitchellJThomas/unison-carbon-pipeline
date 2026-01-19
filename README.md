@@ -29,13 +29,57 @@ The Unison Carbon Pipeline processes real-time and historical carbon intensity d
 - Phase 3: Distributed processing
 - Phase 4: Carbon-aware optimization and scheduling
 
+## Documentation
+
+### For Claude Code Users 🤖
+
+This project is **fully configured for Claude Code** with MCP (Model Context Protocol) server integration:
+
+- **[CLAUDE.md](CLAUDE.md)** - Complete guide for Claude Code development with MCP tools
+- **[MCP_CONFIGURATION.md](MCP_CONFIGURATION.md)** - MCP server tool reference and examples
+- **[CARBON_PIPELINE_PROJECT.md](CARBON_PIPELINE_PROJECT.md)** - Detailed project documentation
+- **[DEVCONTAINER_BOOTSTRAP.md](DEVCONTAINER_BOOTSTRAP.md)** - Automatic project initialization in codespaces
+
+**Quick Start with Claude Code:**
+```javascript
+// Check project status
+mcp__unison__get-current-project-context()
+
+// Run tests
+mcp__unison__run({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  mainFunctionName: "testAggregations",
+  args: []
+})
+```
+
+### For Manual Development
+
+- **[PHASE1_GUIDE.md](PHASE1_GUIDE.md)** - Phase 1 implementation guide
+- **[PHASE1_COMPLETE.md](PHASE1_COMPLETE.md)** - Phase 1 completion notes
+
 ## Getting Started
+
+### Quick Start
+
+Run the quick start script:
+```bash
+./scripts/quickstart.sh
+```
+
+Or use the helper scripts:
+```bash
+./scripts/project-info.sh      # View project information
+./scripts/verify-project.sh    # Verify project setup
+./scripts/run-tests.sh         # Run all tests
+```
 
 ### Prerequisites
 
 - [Unison](https://www.unison-lang.org/docs/quickstart/) installed
 - UCM (Unison Codebase Manager) set up
 - An [Electricity Maps API](https://www.electricitymaps.com/) token (optional for testing with live data)
+- (Optional) [Claude Code CLI](https://claude.ai/code) for AI-assisted development
 
 ### Installation
 
@@ -89,17 +133,30 @@ Percentage low carbon: 60.0%
 
 ```
 .
-├── README.md                    # This file
-├── carbonIntensity.u            # Core data types and helper functions
-├── cleanDecoder.u               # JSON decoder using combinators
-├── aggregations.u               # Analysis functions (avg, min, max, filtering)
+├── README.md                        # This file
+├── CLAUDE.md                        # Claude Code development guide (MCP-first)
+├── MCP_CONFIGURATION.md             # MCP server tool reference
+├── CARBON_PIPELINE_PROJECT.md       # Detailed project documentation
+├── .mcp.json                        # MCP server configuration
+├── .claudeignore                    # Claude Code ignore patterns
+├── carbonIntensity.u                # Core data types and helper functions
+├── cleanDecoder.u                   # JSON decoder using combinators
+├── aggregations.u                   # Analysis functions (avg, min, max, filtering)
+├── scripts/
+│   ├── quickstart.sh                # Quick start setup
+│   ├── project-info.sh              # Display project information
+│   ├── verify-project.sh            # Verify project health
+│   └── run-tests.sh                 # Run all tests
 ├── data/
 │   └── electricity_maps_sample_data.json  # Sample API response
+├── .unison/                         # Unison codebase database (managed by UCM)
+│   └── v2/
+│       └── carbon-pipeline/main     # Project definitions
 ├── docs/
 │   ├── project-inception-build-a-unison-sustainability-pipeline.md
 │   └── programming_paradigm_match.md
-├── PHASE1_COMPLETE.md          # Phase 1 completion notes
-└── PHASE1_GUIDE.md             # Phase 1 implementation guide
+├── PHASE1_COMPLETE.md               # Phase 1 completion notes
+└── PHASE1_GUIDE.md                  # Phase 1 implementation guide
 ```
 
 ## Core Components
@@ -151,7 +208,47 @@ countLowCarbon 300 records
 
 ## Development
 
-### REPL-Driven Workflow
+### With Claude Code (MCP Tools) - RECOMMENDED
+
+Claude Code provides AI-assisted development with MCP server integration. All UCM operations are available through typed MCP tools:
+
+**Explore the project:**
+```javascript
+mcp__unison__list-project-definitions({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"}
+})
+
+mcp__unison__view-definitions({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  names: ["averageCarbonIntensity", "getCarbonIntensity"]
+})
+```
+
+**Run and test:**
+```javascript
+mcp__unison__run({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  mainFunctionName: "testAggregations",
+  args: []
+})
+
+mcp__unison__run-tests({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  subnamespace: null
+})
+```
+
+**Typecheck code:**
+```javascript
+mcp__unison__typecheck-code({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  code: {filePath: "/workspace/carbonIntensity.u"}
+})
+```
+
+See **[CLAUDE.md](CLAUDE.md)** and **[MCP_CONFIGURATION.md](MCP_CONFIGURATION.md)** for complete documentation.
+
+### Manual Development (REPL Workflow)
 
 Unison's development model is uniquely REPL-focused:
 
@@ -159,15 +256,27 @@ Unison's development model is uniquely REPL-focused:
 2. Use `load` to bring them into UCM
 3. Test interactively with `run`
 4. Use `add` to persist to codebase
-5. Use `update.old` to modify existing definitions
+5. Use `update` to modify existing definitions
 
 ### Testing
 
-All core functions include test harnesses that can be run in the REPL:
+**With Claude Code:**
+```javascript
+mcp__unison__run_tests({
+  projectContext: {projectName: "carbon-pipeline", branchName: "main"},
+  subnamespace: null
+})
+```
 
+**With UCM:**
 ```unison
 .> run testAggregations
 .> run testCleanDecoder
+```
+
+**With scripts:**
+```bash
+./scripts/run-tests.sh
 ```
 
 ## API Integration
